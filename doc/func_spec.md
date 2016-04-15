@@ -34,7 +34,8 @@ format=json
 * A package which includes all the necessary files will be provided to simplify the deloyment.
 
 ## High Level Test Requirement
-TBD
+[HLTR](HLTR.md)
+
 ## Future Improvement
 Because of limited schedule and resource, this project only provides major functions at this stage. As this project will be put into production and maintain for 5 years, following improvement is planned:
 
