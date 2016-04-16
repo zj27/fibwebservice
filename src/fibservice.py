@@ -1,20 +1,29 @@
 #!/usr/bin/python
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
-import threading
+import ConfigParser
 import json
+import logging
+import os
+import threading
 import socket
 import sys
-import ConfigParser
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from SocketServer import ThreadingMixIn
 
+LOG_FILE = "/var/log/fibwebservice.log"
 CONFIG_FILE = "/etc/fibserver.cfg"
 FAILURE = 1
 VALID_PORT_RANGE = range(1024, 65535) 
-VALID_OUTPUT_FORMAT = ['json']
+VALID_OUTPUT_FORMAT = ['json', 'xml']
 
 global_configs = {}
 
+def exit_with_msg(msg):
+    """
+    Print the specified message, and exit with failure
+    """
+    print msg
+    sys.exit(FAILURE)
 
 def get_configuration():
     """
@@ -59,20 +68,22 @@ def import_configuration(config_file):
         default_configuration()
  
     if not is_port_valid(configs["port"]):
-        print "Invalid port %d" % configs["port"] 
-        sys.exit(FAILURE)
+        exit_with_msg("Invalid port %d" % configs["port"])
     if not is_output_format_valid(configs["output_format"]):
-        print "Invalid output format %s" % configs["output_format"]
-        sys.exit(FAILURE)
+        exit_with_msg("Invalid output format %s" % configs["output_format"])
 
 def output_formatting(fib_list, output_format):
     """
     Convert the fib list into specified format
     """
-    # So far we only support json format which is best for Fibonacci numbers.
-    # Keep the function here just for future expansion.
     if output_format == "json":
         return json.dumps(fib_list)
+    elif output_format == "xml":
+        for i in range(0, len(fib_list)):
+            fib_list[i] = str(fib_list[i])
+        fib_str = str(" ").join(fib_list)
+        xml_output = '<?xml version="1.0" encoding="UTF-8"?><fib>%s</fib>' % fib_str
+        return xml_output
     else:
         # return json format as default
         return json.dumps(fib_list)
@@ -113,6 +124,12 @@ class httpServHandler(BaseHTTPRequestHandler):
 
         #print threading.currentThread().getName()
 
+    def log_message(self, format, *args):
+        """
+        log the message of the web service
+        """
+        logging.info(format % args)
+
     def validate_request(self):
         """
         Chech if the request is in a valid format
@@ -148,12 +165,57 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """
     Handle requests in a separate  thread.
     """
+def set_logging(log_file_path, env_loglevel = None):
+    """
+    Set the logging file and format of an application which uses python logging module.
+    """
+    # Create the directory if it does not exist
+    directory = os.path.dirname(log_file_path)
+    if not os.path.exists(directory):
+        try:
+            os.makedirs(directory)
+        except OSError, msg:
+            exit_with_msg("Failed to create the log directory of %s, %s." % (directory, msg))
+
+    # Get log level, default value is Info
+    # Dev can change this by dynamically export LOG_LEVEL env
+    DEFAULT_LOGLEVEL = logging.INFO
+
+    if env_loglevel is None:
+        env_loglevel = os.getenv("PYLIB_LOGLEVEL")
+    if env_loglevel is None:
+        # If not defined, set as default value
+        log_level = DEFAULT_LOGLEVEL
+    else:
+        # Else, get customized one
+        env_loglevel = env_loglevel.upper()
+
+        if env_loglevel == "DEBUG":
+            log_level = logging.DEBUG
+        elif env_loglevel == "INFO":
+            log_level = logging.INFO
+        elif env_loglevel == "WARNING":
+            log_level = logging.WARNING
+        elif env_loglevel == "ERROR":
+            log_level = logging.ERROR
+        elif env_loglevel == "CRITICAL":
+            log_level = logging.CRITICAL
+        else:
+            log_level = DEFAULT_LOGLEVEL
+
+    # Set logging file and format
+    try:
+        logging.basicConfig(level=log_level, filename=log_file_path, 
+            format="%(asctime)s %(levelname)s %(filename)s:%(lineno)d - %(message)s")
+    except IOError, msg:
+        exit_with_msg("Failed to set the log file, %s" % msg)
 
 def run():
     """
     Main function to run the web service
     """
 
+    set_logging(LOG_FILE)
     import_configuration(CONFIG_FILE)
     configs = get_configuration()
 
@@ -162,8 +224,7 @@ def run():
         server = ThreadedHTTPServer(server_address, httpServHandler)
         print "Starting server, useg <Ctrl-C> to stop"
     except socket.error, msg:
-        print msg
-        sys.exit(FAILURE)
+        exit_with_msg(msg)
 
     try:
         server.serve_forever()
@@ -176,6 +237,5 @@ if __name__ == "__main__":
         run()
     except Exception, msg:
         # leave no exceptions to the user.
-        print msg
-        sys.exit(FAILURE)
+        exit_with_msg(msg)
 
