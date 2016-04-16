@@ -11,7 +11,7 @@ Programming Language: Python
 ### REST GET Request Handling
 * The program will leverage BaseHTTPServer.HTTPServer to implement the web service. Comparing to the third-party framework, the build-in python module will make it easier for deployment and maintenance.
 * To serve large amount of request, the program will use ThreadingMixIn, thus each request will be handled by a different thread
-* For the response of Fibonacci numbers, json may be the best format. However, the program will leave interface in case it need more kinds for format in the future.
+* For the response of Fibonacci numbers, the program provides two kinds of format: json and xml.
 * If the request provides invalid number or no number, the program will response 400 with proper error message.
 
 ### Fibonacci Number Generation
@@ -21,6 +21,7 @@ Programming Language: Python
 ### User Customization
 * As this project is targeted to put into production, the program provides configuration files for users to configure their host, port and preferred output format.
 * Currently this program only support json so far
+
 ```
 [Server]
 host=localhost
@@ -31,7 +32,8 @@ format=json
 ```
 ### Deployment
 * This project will provide a installation script to distribute the program and configuration files.
-* A package which includes all the necessary files will be provided to simplify the deloyment.
+* A bz2 package which includes all the necessary files will be provided to simplify the deployment.
+* A script will be provided to build the package.
 
 ## High Level Test Requirement
 [HLTR](HLTR.md)
@@ -47,6 +49,3 @@ Because of limited schedule and resource, this project only provides major funct
 
 ### User Authentication
 * In the production, the service may only serve for certain users. It should provide user authentication to block unauthorized request.
-
-### Multiple OS support
-* Currently the service only support Linux platform because of the implantation of configuration files. To expand our market, the program should support more OS like windows.
