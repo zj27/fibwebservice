@@ -13,7 +13,7 @@ Programming Language: Python
 * To serve large amount of request, the program will use ThreadingMixIn, thus each request will be handled by a different thread
 * For the response of Fibonacci numbers, the program provides two kinds of format: json and xml.
 * If the request provides invalid number or no number, the program will response 400 with proper error message.
-
+* The length of fibonacci number list should be between 0 and 10000. IF the length is too long, the value may overflow. 
 ### Fibonacci Number Generation
 * To better leverages the advantage of python, the fibonacci number will directly generated on a list.
 * If the specified number is 0, it generates a empty list. If the number is 1, it returns [0]. If the number is bigger than 1, then it will calculate and extend the list based on [0, 1]
