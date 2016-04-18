@@ -35,12 +35,9 @@ A simple web service which returns Fibonacci numbers with length between 0 and 1
 
 ## Resources
 
-[**doc**](doc/) - contains all project documents
++ [**doc**](doc/) - contains all project documents
    + [Design doc](doc/func_spec.md)
-
-[**src**](src/) - contains the source codes
-
-[**package**](package/) - contains the bz2 for deployment
-
-[**test**](test/) - contains test case and test scripts
++ [**src**](src/) - contains the source codes
++ [**package**](package/) - contains the bz2 for deployment
++ [**test**](test/) - contains test case and test scripts
    + [Test cases](test/test_cases_summary.md)
