@@ -21,6 +21,8 @@ Some of the cases have been implented with automation scripts included in the co
 + U3-3 call the function to load a non-config file
 + U3-4 call the function with invalid config entries
 
+Automation test scripts have been provided for all unit test cases under [unit_test](unit_test/)
+
 # Functional Test
 ## F1 Installation/Deployment
 + F1-1 Execute the installation script
