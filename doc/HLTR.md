@@ -8,6 +8,7 @@
 * The web service response with error when the GET request provides invalid number
 * The web service response with error when the GET request provides no number
 * The web service response nothing for other kinds of request
+
 ## Configuration
 ### Normal Functionality
 * The web service is able to read the configuration file and works with the customized configuration. 
