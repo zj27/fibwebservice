@@ -54,3 +54,6 @@ Because of limited schedule and resource, this project only provides major funct
 
 ### Continuous Integration
 * CI tools should be leveraged to build and test the program automatically for better project management.
+
+## Known issues
++ The output/logging within the functions is not suppressed during unit test. Need upgrade to later version of python to solve it.
