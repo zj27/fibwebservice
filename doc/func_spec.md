@@ -14,7 +14,7 @@ Programming Language: Python (2.6.8)
 * For the response of Fibonacci numbers, the program provides two kinds of format: json and xml.
 * If the request provides invalid number or no number, the program will response 400 with proper error message.
 * The length of fibonacci number list should be between 0 and 10000. If the length is too long, the value may overflow. 
-* http messages should be recorded into log file.
+* Http messages should be recorded into log file.
 
 ### Fibonacci Number Generation
 * To better leverages the advantage of python, the fibonacci number will directly generated on a list.
