@@ -35,9 +35,9 @@ Automation test scripts have been provided for all unit test cases under [unit_t
 	+ Send GET request without number
 	+ Send other kinds of request
 
-A test client script has been provided under [func_test](func_test)
-
 + F2-2 Start multiple web services on same port
+
+A test client script has been provided under [func_test](func_test)
 
 ## F3 Customize configuration
 + F3-1 Change the host and port with valid value, and start the web service
