@@ -18,7 +18,7 @@ LOG_FILE = "/var/log/fibwebservice.log"
 CONFIG_FILE = "/etc/fibserver.cfg"
 FAILURE = 1
 SUCCESS = 0
-VALID_PORT_RANGE = range(1024, 65535) 
+VALID_PORT_RANGE = range(1024, 65536) 
 VALID_OUTPUT_FORMAT = ['json', 'xml']
 FIB_MAX = 10000
 VALID_FIB_RANGE = range(1, FIB_MAX + 1)
@@ -151,8 +151,6 @@ class httpServHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("The request url must be a postive integer number between 1 and %d" % FIB_MAX)
         
-
-        #print threading.currentThread().getName()
 
     def log_message(self, format, *args):
         """
