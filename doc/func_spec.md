@@ -51,3 +51,6 @@ Because of limited schedule and resource, this project only provides major funct
 
 ### User Authentication
 * In the production, the service may only serve for certain users. It should provide user authentication to block unauthorized request.
+
+### Continuous Integration
+* CI tools should be leveraged to build and test the program automatically for better project management.
