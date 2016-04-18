@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+"""
+A simple web service returns first n Fibonacci numbers
+"""
+
 import ConfigParser
 import json
 import logging
@@ -36,18 +40,27 @@ def get_configuration():
     return global_configs
 
 def default_configuration():
+    """
+    Generate default configuration
+    """
     configs = get_configuration()
     configs["host"] = "localhost"
     configs["port"] = 8000
     configs["output_format"] = 'json'
 
 def is_port_valid(port):
+    """
+    Check if the port is valid
+    """
     if port in VALID_PORT_RANGE:
         return True
     else:
         return False
 
 def is_output_format_valid(output_format):
+    """
+    Check if the format is valid
+    """
     if output_format in VALID_OUTPUT_FORMAT:
         return True
     else:
@@ -115,7 +128,13 @@ def fibs(num):
         return result
 
 class httpServHandler(BaseHTTPRequestHandler):
+    """
+    HTTP request handler
+    """
     def do_GET(self):
+        """
+        GET
+        """
 
         fib_num, is_valid = self.validate_request()
  
