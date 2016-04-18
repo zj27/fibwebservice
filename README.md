@@ -1,5 +1,5 @@
 # fibwebservice
-A simple web service which returns Fibonacci numbers with length between 0 and 10000.
+A simple web service which returns Fibonacci numbers with specified length between 0 and 10000.
 # Quick Start
 ## Installation
 1. Download the package **fibwebservice.tar.bz2**, or download the entire source and execute the **build.sh** to generate the package. Compare the md5 with **fibwebservice.tar.bz2.md5**
@@ -35,12 +35,9 @@ A simple web service which returns Fibonacci numbers with length between 0 and 1
 
 ## Resources
 
-[Design doc](doc/func_spec.md)
-
-[**doc**](doc/) - contains all project documents
-
-[**src**](src/) - contains the source codes
-
-[**package**](package/) - contains the bz2 for deployment
-
-[**test**](test/) - contains test case and test scripts
++ [**doc**](doc/) - contains all project documents
+   + [Design doc](doc/func_spec.md)
++ [**src**](src/) - contains the source codes
++ [**package**](package/) - contains the bz2 for deployment
++ [**test**](test/) - contains test case and test scripts
+   + [Test cases](test/test_cases_summary.md)
