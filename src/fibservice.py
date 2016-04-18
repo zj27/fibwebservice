@@ -13,8 +13,11 @@ from SocketServer import ThreadingMixIn
 LOG_FILE = "/var/log/fibwebservice.log"
 CONFIG_FILE = "/etc/fibserver.cfg"
 FAILURE = 1
+SUCCESS = 0
 VALID_PORT_RANGE = range(1024, 65535) 
 VALID_OUTPUT_FORMAT = ['json', 'xml']
+FIB_MAX = 10000
+VALID_FIB_RANGE = range(1, FIB_MAX + 1)
 
 global_configs = {}
 
@@ -68,9 +71,11 @@ def import_configuration(config_file):
         default_configuration()
  
     if not is_port_valid(configs["port"]):
-        exit_with_msg("Invalid port %d" % configs["port"])
+        return FAILURE, "Invalid port %d" % configs["port"]
     if not is_output_format_valid(configs["output_format"]):
-        exit_with_msg("Invalid output format %s" % configs["output_format"])
+        return FAILURE, "Invalid output format %s" % configs["output_format"]
+
+    return SUCCESS, None
 
 def output_formatting(fib_list, output_format):
     """
@@ -79,9 +84,13 @@ def output_formatting(fib_list, output_format):
     if output_format == "json":
         return json.dumps(fib_list)
     elif output_format == "xml":
-        for i in range(0, len(fib_list)):
-            fib_list[i] = str(fib_list[i])
-        fib_str = str(" ").join(fib_list)
+        try:
+            for i in range(0, len(fib_list)):
+                fib_list[i] = str(fib_list[i])
+            fib_str = str(" ").join(fib_list)
+        except TypeError, msg:
+            logging.error(msg)
+            fib_str = ""
         xml_output = '<?xml version="1.0" encoding="UTF-8"?><fib>%s</fib>' % fib_str
         return xml_output
     else:
@@ -93,9 +102,11 @@ def fibs(num):
     """
     Return the fib list with specified number
     """
-    if num <= 0:
+    
+    if num not in VALID_FIB_RANGE:
         return []
-    elif num == 1:
+
+    if num == 1:
         return [0]
     else:
         result = [0, 1]
@@ -119,7 +130,7 @@ class httpServHandler(BaseHTTPRequestHandler):
             self.send_response(400)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfile.write("The request url must be a postive integer number")
+            self.wfile.write("The request url must be a postive integer number between 1 and %d" % FIB_MAX)
         
 
         #print threading.currentThread().getName()
@@ -150,12 +161,12 @@ class httpServHandler(BaseHTTPRequestHandler):
 
         # bad request for non-integer
         try:
-            fib_num = int(fib_num)
+            fib_num = long(fib_num)
         except ValueError:
             return 0, False
 
         # bad request for negative value
-        if fib_num < 0:
+        if fib_num not in VALID_FIB_RANGE:
             return 0, False
 
         return fib_num, True
@@ -216,7 +227,9 @@ def run():
     """
 
     set_logging(LOG_FILE)
-    import_configuration(CONFIG_FILE)
+    status, output = import_configuration(CONFIG_FILE)
+    if status != SUCCESS:
+        exit_with_msg(output)
     configs = get_configuration()
 
     try:
