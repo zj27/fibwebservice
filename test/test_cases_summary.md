@@ -1,13 +1,13 @@
 # Test Cases Summary
 Here is the summary of all the test cases for this project. <br>
-Some of the cases have been implented with automation scripts included in the corresponding folders.
+Some of the cases have been implemented with automation scripts included in the corresponding folders.
 # Unit Test
 ## U1 Fibonacci Numbers Generation Function
 + U1-1 call the function with normal random positive integer number. 
 + U1-2 call the function with negative number.
 + U1-3 call the function with floating number.
 + U1-4 call the function with string
-+ U1-5 call the function with very big number.
++ U1-5 call the function with very big number out of boundary.
 
 ## U2 Output Formatting
 + U2-1 call the function with json output
@@ -17,7 +17,7 @@ Some of the cases have been implented with automation scripts included in the co
 
 ## U3 Import Configuration
 + U3-1 call the function to load a valid config file
-+ U3-2 call the function to load a empy file
++ U3-2 call the function to load a empty file
 + U3-3 call the function to load a non-config file
 + U3-4 call the function with invalid config entries
 
@@ -33,7 +33,7 @@ Automation test scripts have been provided for all unit test cases under [unit_t
 	+ Send GET request with random valid number
 	+ Send GET request with negative/floating/big number
 	+ Send GET request without number
-	+ Send other kinds of request
+	+ Send POST request
 
 + F2-2 Start multiple web services on same port
 
