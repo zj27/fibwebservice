@@ -8,11 +8,10 @@ import ConfigParser
 import json
 import logging
 import os
-import threading
-import socket
 import sys
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
+
+from flask import Flask
+app = Flask(__name__)
 
 LOG_FILE = "/var/log/fibwebservice.log"
 CONFIG_FILE = "/etc/fibserver.cfg"
@@ -23,30 +22,12 @@ VALID_OUTPUT_FORMAT = ['json', 'xml']
 FIB_MAX = 10000
 VALID_FIB_RANGE = range(1, FIB_MAX + 1)
 
-global_configs = {}
-
 def exit_with_msg(msg):
     """
     Print the specified message, and exit with failure
     """
     print msg
     sys.exit(FAILURE)
-
-def get_configuration():
-    """
-    Return the global_configs to avoid using global everywhere.
-    """
-    global global_configs
-    return global_configs
-
-def default_configuration():
-    """
-    Generate default configuration
-    """
-    configs = get_configuration()
-    configs["host"] = "localhost"
-    configs["port"] = 8000
-    configs["output_format"] = 'json'
 
 def is_port_valid(port):
     """
@@ -70,7 +51,8 @@ def import_configuration(config_file):
     """
     Import basic configuration for conf file
     """
-    configs = get_configuration()
+
+    configs = {}
 
 
     try:
@@ -82,7 +64,7 @@ def import_configuration(config_file):
     except ConfigParser.Error:
         print "Error during loading configuration file. Use default configuration"
         default_configuration()
- 
+
     if not is_port_valid(configs["port"]):
         return FAILURE, "Invalid port %d" % configs["port"]
     if not is_output_format_valid(configs["output_format"]):
@@ -122,77 +104,17 @@ def fibs(num):
     if num == 1:
         return [0]
     else:
-        result = [0, 1]
-        for i in range(num-2):
-            result.append(result[-2]+result[-1])
+        result = [0] * num
+        result[0] = 0
+        result[1] = 1
+        for i in range(2, num):
+            result[i] = result[i-2]+result[i-1]
         return result
 
-class httpServHandler(BaseHTTPRequestHandler):
-    """
-    HTTP request handler
-    """
-    def do_GET(self):
-        """
-        GET
-        """
+@app.route("/fib/<int:num>")
+def get_fib_nums(num):
+    return json.dumps(fibs(num))
 
-        fib_num, is_valid = self.validate_request()
- 
-        if is_valid:
-            configs = get_configuration()
-            self.send_response(200)
-            self.send_header('Content-type', 'text/%s' % configs['output_format'])
-            self.end_headers()
-            result = fibs(fib_num)
-            self.wfile.write(output_formatting(result, configs['output_format']))
-        else:
-            self.send_response(400)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write("The request url must be a postive integer number between 1 and %d" % FIB_MAX)
-        
-
-    def log_message(self, format, *args):
-        """
-        log the message of the web service
-        """
-        logging.info(format % args)
-
-    def validate_request(self):
-        """
-        Chech if the request is in a valid format
-        """
-        if self.path.find('?') != -1:
-            self.path, self.query_string = self.path.split('?', 1)
-        else:
-            self.query_string = ''
-
-        # get the fib number from the url
-        fib_num = 0
-        if self.path.find('/') != -1:
-            fib_num = self.path.split('/')[-1]
-
-        # bypass the favicon for browser
-        if fib_num == "favicon.ico":
-            return 0, False
-
-        # bad request for non-integer
-        try:
-            fib_num = long(fib_num)
-        except ValueError:
-            return 0, False
-
-        # bad request for negative value
-        if fib_num not in VALID_FIB_RANGE:
-            return 0, False
-
-        return fib_num, True
-           
-
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    """
-    Handle requests in a separate  thread.
-    """
 def set_logging(log_file_path, env_loglevel = None):
     """
     Set the logging file and format of an application which uses python logging module.
@@ -243,24 +165,12 @@ def run():
     Main function to run the web service
     """
 
-    set_logging(LOG_FILE)
-    status, output = import_configuration(CONFIG_FILE)
-    if status != SUCCESS:
-        exit_with_msg(output)
-    configs = get_configuration()
+    #set_logging(LOG_FILE)
+    #status, output = import_configuration(CONFIG_FILE)
+    #if status != SUCCESS:
+    #    exit_with_msg(output)
 
-    try:
-        server_address = (configs['host'], configs['port'])
-        server = ThreadedHTTPServer(server_address, httpServHandler)
-        print "Starting server, useg <Ctrl-C> to stop"
-    except socket.error, msg:
-        exit_with_msg(msg)
-
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print "Shutting down the server..."
-        server.shutdown()
+    app.run()
 
 if __name__ == "__main__":
     try:

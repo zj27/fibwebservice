@@ -11,4 +11,4 @@ if __name__ == "__main__":
     suite.addTest(unittest.TestLoader().loadTestsFromModule(test_u3_config))
 
     # Run the whole test suite
-    unittest.TextTestRunner(verbosity=2).run(suite)  
+    unittest.TextTestRunner(verbosity=2, buffer=True).run(suite)  
