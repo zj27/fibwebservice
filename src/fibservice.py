@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import sys
+from xml.dom import minidom
 
 from flask import Flask
 app = Flask(__name__)
@@ -28,6 +29,14 @@ def exit_with_msg(msg):
     """
     print msg
     sys.exit(FAILURE)
+
+def default_configuration():
+    """
+    Generate default configuration
+    """
+    app.config["host"] = "localhost"
+    app.config["port"] = 8000
+    app.config["output_format"] = 'json'
 
 def is_port_valid(port):
     """
@@ -58,19 +67,38 @@ def import_configuration(config_file):
     try:
         config_parser = ConfigParser.RawConfigParser()
         config_parser.read(config_file)
-        configs["host"] = config_parser.get("Server", "host")
-        configs["port"] = config_parser.getint("Server", "port")
-        configs["output_format"] = config_parser.get("Output", "format")
+        app.config["host"] = config_parser.get("Server", "host")
+        app.config["port"] = config_parser.getint("Server", "port")
+        app.config["output_format"] = config_parser.get("Output", "format")
     except ConfigParser.Error:
         print "Error during loading configuration file. Use default configuration"
         default_configuration()
 
-    if not is_port_valid(configs["port"]):
-        return FAILURE, "Invalid port %d" % configs["port"]
-    if not is_output_format_valid(configs["output_format"]):
-        return FAILURE, "Invalid output format %s" % configs["output_format"]
+    if not is_port_valid(app.config["port"]):
+        return FAILURE, "Invalid port %d" % app.config["port"]
+    if not is_output_format_valid(app.config["output_format"]):
+        return FAILURE, "Invalid output format %s" % app.config["output_format"]
 
     return SUCCESS, None
+
+def generate_fib_xml(fib_list):
+    """
+    Generate a xml with fib list
+    """
+    try:
+        for i in range(0, len(fib_list)):
+            fib_list[i] = str(fib_list[i])
+        fib_str = str(" ").join(fib_list)
+    except TypeError, msg:
+        logging.error(msg)
+        fib_str = ""
+    doc = minidom.Document()
+    fib = doc.createElement("Fibonacci")
+    doc.appendChild(fib)
+    fib.appendChild(doc.createTextNode(fib_str))
+    #print doc.toxml()
+    print doc.toprettyxml()
+    return doc.toprettyxml()
 
 def output_formatting(fib_list, output_format):
     """
@@ -79,15 +107,7 @@ def output_formatting(fib_list, output_format):
     if output_format == "json":
         return json.dumps(fib_list)
     elif output_format == "xml":
-        try:
-            for i in range(0, len(fib_list)):
-                fib_list[i] = str(fib_list[i])
-            fib_str = str(" ").join(fib_list)
-        except TypeError, msg:
-            logging.error(msg)
-            fib_str = ""
-        xml_output = '<?xml version="1.0" encoding="UTF-8"?><fib>%s</fib>' % fib_str
-        return xml_output
+        return generate_fib_xml(fib_list)
     else:
         # return json format as default
         return json.dumps(fib_list)
@@ -113,7 +133,7 @@ def fibs(num):
 
 @app.route("/fib/<int:num>")
 def get_fib_nums(num):
-    return json.dumps(fibs(num))
+    return output_formatting(fibs(num), app.config['output_format'])
 
 def set_logging(log_file_path, env_loglevel = None):
     """
@@ -166,11 +186,11 @@ def run():
     """
 
     #set_logging(LOG_FILE)
-    #status, output = import_configuration(CONFIG_FILE)
-    #if status != SUCCESS:
-    #    exit_with_msg(output)
+    status, output = import_configuration(CONFIG_FILE)
+    if status != SUCCESS:
+        exit_with_msg(output)
 
-    app.run()
+    app.run(app.config['host'], app.config['port'])
 
 if __name__ == "__main__":
     try:
