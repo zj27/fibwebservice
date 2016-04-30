@@ -12,6 +12,7 @@ import sys
 from xml.dom import minidom
 
 from flask import Flask
+from flask import abort
 app = Flask(__name__)
 
 LOG_FILE = "/var/log/fibwebservice.log"
@@ -131,7 +132,14 @@ def fibs(num):
 
 @app.route("/fib/<int:num>")
 def get_fib_nums(num):
-    return output_formatting(fibs(num), app.config['output_format'])
+    fib_list = fibs(num)
+    if len(fib_list) == 0:
+         abort(400)
+    return output_formatting(fib_list, app.config['output_format'])
+
+@app.errorhandler(400)
+def bad_request(error):
+    return "The fibonaaci numbers length is limited between 0 and %s" % FIB_MAX, 400
 
 def set_logging(log_file_path, env_loglevel = None):
     """
@@ -183,7 +191,7 @@ def run():
     Main function to run the web service
     """
 
-    #set_logging(LOG_FILE)
+    set_logging(LOG_FILE)
     status, output = import_configuration(CONFIG_FILE)
     if status != SUCCESS:
         exit_with_msg(output)
