@@ -96,8 +96,6 @@ def generate_fib_xml(fib_list):
     fib = doc.createElement("Fibonacci")
     doc.appendChild(fib)
     fib.appendChild(doc.createTextNode(fib_str))
-    #print doc.toxml()
-    print doc.toprettyxml()
     return doc.toprettyxml()
 
 def output_formatting(fib_list, output_format):

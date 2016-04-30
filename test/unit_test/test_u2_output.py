@@ -1,5 +1,6 @@
 import unittest
 import json
+from xml.dom import minidom
 from fibservice import output_formatting
 
 class OutputTestCase(unittest.TestCase):
@@ -25,10 +26,14 @@ class OutputTestCase(unittest.TestCase):
         """
         self.assertEqual(json.dumps(self.fib1), output_formatting(self.fib1, 'json'))
         self.assertEqual(json.dumps(self.fib2), output_formatting(self.fib2, 'json'))
-        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><fib>0 1 1 2 3</fib>', 
-                         output_formatting(self.fib1, 'xml'))
-        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><fib>0</fib>', 
-                         output_formatting(self.fib2, 'xml'))
+      
+        xml_str = output_formatting(self.fib1, 'xml')
+        dom = minidom.parseString(xml_str)
+        self.assertEqual('0 1 1 2 3', dom.getElementsByTagName('Fibonacci')[0].childNodes[0].data)   
+ 
+        xml_str = output_formatting(self.fib2, 'xml')
+        dom = minidom.parseString(xml_str)
+        self.assertEqual('0', dom.getElementsByTagName('Fibonacci')[0].childNodes[0].data)   
 
     def test_negative_input(self):
         """
@@ -39,5 +44,10 @@ class OutputTestCase(unittest.TestCase):
 
         self.assertEqual(json.dumps("hello"), output_formatting("hello", 'json'))
 
-        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><fib></fib>', output_formatting("hello", 'xml'))
-        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><fib></fib>', output_formatting(1, 'xml'))
+        xml_str = output_formatting("hello", 'xml')
+        dom = minidom.parseString(xml_str)
+        self.assertEqual(0, len(dom.getElementsByTagName('Fibonacci')[0].childNodes))   
+
+        xml_str = output_formatting(1, 'xml')
+        dom = minidom.parseString(xml_str)
+        self.assertEqual(0, len(dom.getElementsByTagName('Fibonacci')[0].childNodes))   
