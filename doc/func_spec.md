@@ -7,14 +7,20 @@ The project is target to implement a web service which support a REST GET call. 
 *  The web service doesn't response for other kinds of request
 
 ## Implementation Specification
-Programming Language: Python (2.6.8)
+Programming Language: Python (2.x)
+### Web Service Framework
+* To build a web service, python has build-in library like BaseHTTPServer. However, directly build web service based on those libraries is not effcient and robust. Therefore, a web service framework should be leveraged.
+* There are lots of web service framework for python. Here are two of the most popular:
+	* Django
+	* Flask
+  
+  Flask is chosen for this project, because comparing to Django, Flask is a mircro framework which is more flexiable and suitable for such small web service product. 
+
 ### REST GET Request Handling
-* The program will leverage BaseHTTPServer.HTTPServer to implement the web service. Comparing to the third-party framework, the build-in python module will make it easier for deployment and maintenance.
-* To serve large amount of request, the program will use ThreadingMixIn, thus each request will be handled by a different thread
 * For the response of Fibonacci numbers, the program provides two kinds of format: json and xml.
-* If the request provides invalid number or no number, the program will response 400 with proper error message.
+* If the request provides invalid number or no number, the program will response 400 or 404 with proper error message.
 * The length of fibonacci number list should be between 0 and 10000. If the length is too long, the value may overflow. 
-* Http messages should be recorded into log file.
+* Http messages will be recorded into log file.
 
 ### Fibonacci Number Generation
 * To better leverage the advantage of python, the fibonacci number will directly generated on a list.
@@ -36,24 +42,8 @@ format=json
 * This project will provide a installation script to distribute the program and configuration files.
 * A bz2 package which includes all the necessary files will be provided to simplify the deployment.
 * A script will be provided to build the package.
+* The deployment will install the binary(python file) and configuration file. User could simply run and test it. For real production, a modern web server like Apache2 is suggested.
 
 ## High Level Test Requirement
 [HLTR](HLTR.md)
 
-## Future Improvement
-Because of limited schedule and resource, this project only provides major functions at this stage. As this project will be put into production and maintain for 5 years, following improvement is planned:
-
-### Daemon
-* For better deployment and operation, the program should support running as a daemon. Init script should be provided to start, stop and restart the service.
-
-### Server-side Cache
-* For better performance at server side, the program should implement a server-side cache to store recent request result(eg. last 100 queries) which could avoid some duplicated calculation.
-
-### User Authentication
-* In the production, the service may only serve for certain users. It should provide user authentication to block unauthorized request.
-
-### Continuous Integration
-* CI tools should be leveraged to build and test the program automatically for better project management.
-
-## Known issues
-+ The output/logging within the functions is not suppressed during unit test. Need upgrade to later version of python to solve it.

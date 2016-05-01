@@ -196,7 +196,7 @@ def run():
     if status != SUCCESS:
         exit_with_msg(output)
 
-    app.run(app.config['host'], app.config['port'])
+    app.run(app.config['host'], app.config['port'], threaded = True)
 
 if __name__ == "__main__":
     try:
