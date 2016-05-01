@@ -16,7 +16,7 @@ from flask import abort
 app = Flask(__name__)
 
 LOG_FILE = "/var/log/fibwebservice.log"
-CONFIG_FILE = "/etc/fibserver.cfg"
+CONFIG_FILE = "/etc/figservice.cfg"
 FAILURE = 1
 SUCCESS = 0
 VALID_PORT_RANGE = range(1024, 65536) 
@@ -57,13 +57,25 @@ def is_output_format_valid(output_format):
     else:
         return False
 
+def import_configuration_wsgi(config_file = CONFIG_FILE):
+    """
+    Import the configuration by wsgi. Ignore server related entries
+    """
+    try:
+        config_parser = ConfigParser.RawConfigParser()
+        config_parser.read(config_file)
+        app.config["output_format"] = config_parser.get("Output", "format")
+    except ConfigParser.Error:
+        default_configuration()
+
+    if not is_output_format_valid(app.config["output_format"]):
+        default_configuration()
+
+
 def import_configuration(config_file):
     """
     Import basic configuration for conf file
     """
-
-    configs = {}
-
 
     try:
         config_parser = ConfigParser.RawConfigParser()
