@@ -34,7 +34,7 @@ Here is a simple guide on how to directly run this web service. For production, 
 	# fibservice.py
 	Starting server, use <Ctrl-C> to stop
 	```
-	
+    The service need to create log file under /var/log/. If the service failed to create the log file, please execute it with proper privilege or manually create the log file with proper privilege. 	
 3. Use client program, browser or curl to send GET request with a positive number at the end of url.
 
 	```
