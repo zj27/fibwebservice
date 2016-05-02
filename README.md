@@ -38,7 +38,7 @@ Here is a simple guide on how to directly run this web service. For production, 
 3. Use client program, browser or curl to send GET request with a positive number at the end of url.
 
 	```
-	curl http://10.32.118.201:8000/10
+	curl http://10.32.118.201:8000/fib/10
 	[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
 	```
 
