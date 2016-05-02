@@ -2,23 +2,23 @@
 ## Background
 The project is target to implement a web service which support a REST GET call. The major function of this web service is to accept a number and return the Fibonacci numbers with the length of the given number. This project is going to be put into production and maintain for at least 5 years.
 ## User Cases
-* The web service receives a REST GET request with a postive integer number n. The web service responds with the first n Fibonacci numbers(starting from 0)
-*  The web service receives a REST GET request with a negative number, floating number, or without number. The web service responds with an appropirate error
+* The web service receives a REST GET request with a positive integer number n. The web service responds with the first n Fibonacci numbers(starting from 0)
+*  The web service receives a REST GET request with a negative number, floating number, or without number. The web service responds with an appropriate error
 *  The web service doesn't respond for other kinds of request
 
 ## Implementation Specification
 Programming Language: Python (2.x)
 ### Web Service Framework
-* To build a web service, python has build-in library like BaseHTTPServer. However, directly build web service based on those libraries is not effcient and robust. Therefore, a web service framework should be leveraged.
+* To build a web service, python has build-in library like BaseHTTPServer. However, directly build web service based on those libraries is not efficient and robust. Therefore, a web service framework should be leveraged.
 * There are lots of web service framework for python. Here are two of the most popular:
 	* Django
 	* Flask
   
-  Flask is chosen for this project, because comparing to Django, Flask is a mircro framework which is more flexiable and suitable for such small web service product. 
+  Flask is chosen for this project, because comparing to Django, Flask is a mirco framework which is more flexible and suitable for such small web service product. 
 
 ### REST GET Request Handling
 * The GET request url should follow the pattern as "\<host:80\>/fib/\<num\>"
-	* The number should be a postive integer between 0 and 10000.
+	* The number should be a positive integer between 0 and 10000.
 	* The upper of the scope is set as 10000, because if the number is too big, the calculation and data transmission will become very slow. And the program have the risk of crash because of memory issue.
 * If the request url is invalid, the service will respond 400 or 404 with proper error message.
 	* If the url direct to a different location, 404 error will be returned

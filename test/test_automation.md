@@ -1,5 +1,5 @@
 # Test Automation
-Most of the test cases which has no dependecy on environment have been automated by python unittest module
+Most of the test cases which has no dependency on environment have been automated by python unittest module
 
 The [test_const.py](test_const.py) contains all the necessary constant required for the test verification.
 
