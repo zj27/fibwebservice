@@ -17,14 +17,27 @@ Programming Language: Python (2.x)
   Flask is chosen for this project, because comparing to Django, Flask is a mircro framework which is more flexiable and suitable for such small web service product. 
 
 ### REST GET Request Handling
+* The GET request url should follow the pattern as "<host:80>/fib/<num>"
+	* The number should be a postive integer between 0 and 10000.
+	* The upper of the scope is set as 10000, because if the number is too big, the calculation and data transmission will become very slow. And the program have the risk of crash because of memory issue.
+* If the request url is invalid, the service will response 400 or 404 with proper error message.
+	* If the url direct to a different location, 404 error will be returned
+	* If the url is followed by a negative number, floating number or string, 404 error will be returned.
+	* If the url is followed by integer out of the supported range, 400 error will be returned with error message. 
 * For the response of Fibonacci numbers, the program provides two kinds of format: json and xml.
-* If the request provides invalid number or no number, the program will response 400 or 404 with proper error message.
-* The length of fibonacci number list should be between 0 and 10000. If the length is too long, the value may overflow. 
 * Http messages will be recorded into log file.
+
+### Caching
+* The service provides a simple cache which is only enabled when running by buildin server.
+	* The cache will store the longest fibonacci number list which has been requested so far.
+	* If the new incoming request needs a shorter list, the service could directly return part of the list from the cache without duplicated calculation.
+	* Considering this service only returns fibonacci numbers, the cache will be not expired. 
+* For production, the simple cache is not suffcient, so it will be disabled when deployed in a http server. Please refer to the server for caching.
 
 ### Fibonacci Number Generation
 * To better leverage the advantage of python, the fibonacci number will directly generated on a list.
 * If the specified number is 0, it generates a empty list. If the number is 1, it returns [0]. If the number is bigger than 1, then it will calculate and extend the list based on [0, 1]
+* If a previous existing list is get from the cache, the generation function will do the calculation based on the existing list to avoid unnecessary overhead. 
 
 ### User Customization
 * As this project is targeted to put into production, the program provides configuration files for users to configure their host, port and preferred output format.
@@ -47,3 +60,6 @@ format=json
 ## High Level Test Requirement
 [HLTR](HLTR.md)
 
+## Potential Improvement
+### Deployment by Docker
+The current deployment procedure is still a little complex because it has dependency on python, flask and external http server. Container may be leveraged for a quick and simple deployment. All the dependencies could be installed in the container by being specified in the dockerfile. 
