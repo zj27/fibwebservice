@@ -1,9 +1,9 @@
 # Deployment in Apache
 Here is a simple and tutorial to deploy fibwebservice in the Apache. The fibwebservice package also includes some necessary configuration file as example.
 
-**Step 1: ** Download the package and install the service as mentioned in the [quick start](../README.md).
+**Step 1:** Download the package and install the service as mentioned in the [quick start](../README.md).
 
-**Step 2: ** In the downloaded package, there is a fold "deploy_apache" which contains two files:
+**Step 2:** In the downloaded package, there is a fold "deploy_apache" which contains two files:
 
 ```
 ls deploy_apache/
@@ -25,7 +25,7 @@ from fibservice import import_configuration_wsgi
 import_configuration_wsgi()
 ```
 
-**Step 3: ** Create Apache configuration file. The 001-fibservice.conf could be an example:
+**Step 3:** Create Apache configuration file. The 001-fibservice.conf could be an example:
 
 ```
 <VirtualHost *:80>
@@ -43,7 +43,7 @@ import_configuration_wsgi()
 </VirtualHost>
 ```
 
-**Step 4: ** Restart the Apache. The web service should be functional.
+**Step 4:** Restart the Apache. The web service should be functional.
  
 
 

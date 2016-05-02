@@ -57,3 +57,4 @@ For other deployment options, please refer to the [offical Flask doc](http://fla
 + [**package**](package/) - contains the bz2 for deployment
 + [**test**](test/) - contains test case and test scripts
    + [Test cases](test/test_cases_summary.md)
+   + [Test Automation](test/test_automation.md)
