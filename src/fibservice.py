@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 
 LOG_FILE = "/var/log/fibwebservice.log"
-CONFIG_FILE = "/etc/figservice.cfg"
+CONFIG_FILE = "/etc/fibservice.cfg"
 FAILURE = 1
 SUCCESS = 0
 VALID_PORT_RANGE = range(1024, 65536) 
