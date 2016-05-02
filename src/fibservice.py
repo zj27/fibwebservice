@@ -8,22 +8,23 @@ import ConfigParser
 import json
 import logging
 import os
-import threading
-import socket
 import sys
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
+from xml.dom import minidom
+
+from flask import Flask
+from flask import abort
+from werkzeug.contrib.cache import SimpleCache 
+app = Flask(__name__)
+
 
 LOG_FILE = "/var/log/fibwebservice.log"
-CONFIG_FILE = "/etc/fibserver.cfg"
+CONFIG_FILE = "/etc/figservice.cfg"
 FAILURE = 1
 SUCCESS = 0
 VALID_PORT_RANGE = range(1024, 65536) 
 VALID_OUTPUT_FORMAT = ['json', 'xml']
 FIB_MAX = 10000
 VALID_FIB_RANGE = range(1, FIB_MAX + 1)
-
-global_configs = {}
 
 def exit_with_msg(msg):
     """
@@ -32,21 +33,14 @@ def exit_with_msg(msg):
     print msg
     sys.exit(FAILURE)
 
-def get_configuration():
-    """
-    Return the global_configs to avoid using global everywhere.
-    """
-    global global_configs
-    return global_configs
-
 def default_configuration():
     """
     Generate default configuration
     """
-    configs = get_configuration()
-    configs["host"] = "localhost"
-    configs["port"] = 8000
-    configs["output_format"] = 'json'
+    app.config["host"] = "localhost"
+    app.config["port"] = 8000
+    app.config["output_format"] = 'json'
+    app.config["local_cache"] = None
 
 def is_port_valid(port):
     """
@@ -66,29 +60,63 @@ def is_output_format_valid(output_format):
     else:
         return False
 
+def import_configuration_wsgi(config_file = CONFIG_FILE):
+    """
+    Import the configuration by wsgi. Ignore server related entries
+    """
+    try:
+        config_parser = ConfigParser.RawConfigParser()
+        config_parser.read(config_file)
+        app.config["output_format"] = config_parser.get("Output", "format")
+    except ConfigParser.Error:
+        default_configuration()
+
+    if not is_output_format_valid(app.config["output_format"]):
+        default_configuration()
+
+    # Do not use local cache when integrated with a wsgi server
+    app.config["local_cache"] = None
+
 def import_configuration(config_file):
     """
     Import basic configuration for conf file
     """
-    configs = get_configuration()
-
 
     try:
         config_parser = ConfigParser.RawConfigParser()
         config_parser.read(config_file)
-        configs["host"] = config_parser.get("Server", "host")
-        configs["port"] = config_parser.getint("Server", "port")
-        configs["output_format"] = config_parser.get("Output", "format")
+        app.config["host"] = config_parser.get("Server", "host")
+        app.config["port"] = config_parser.getint("Server", "port")
+        app.config["output_format"] = config_parser.get("Output", "format")
     except ConfigParser.Error:
         print "Error during loading configuration file. Use default configuration"
         default_configuration()
- 
-    if not is_port_valid(configs["port"]):
-        return FAILURE, "Invalid port %d" % configs["port"]
-    if not is_output_format_valid(configs["output_format"]):
-        return FAILURE, "Invalid output format %s" % configs["output_format"]
+
+    if not is_port_valid(app.config["port"]):
+        return FAILURE, "Invalid port %d" % app.config["port"]
+    if not is_output_format_valid(app.config["output_format"]):
+        return FAILURE, "Invalid output format %s" % app.config["output_format"]
+
+    app.config["local_cache"] = SimpleCache()
 
     return SUCCESS, None
+
+def generate_fib_xml(fib_list):
+    """
+    Generate a xml with fib list
+    """
+    try:
+        for i in range(0, len(fib_list)):
+            fib_list[i] = str(fib_list[i])
+        fib_str = str(" ").join(fib_list)
+    except TypeError, msg:
+        logging.error(msg)
+        fib_str = ""
+    doc = minidom.Document()
+    fib = doc.createElement("Fibonacci")
+    doc.appendChild(fib)
+    fib.appendChild(doc.createTextNode(fib_str))
+    return doc.toprettyxml()
 
 def output_formatting(fib_list, output_format):
     """
@@ -97,23 +125,17 @@ def output_formatting(fib_list, output_format):
     if output_format == "json":
         return json.dumps(fib_list)
     elif output_format == "xml":
-        try:
-            for i in range(0, len(fib_list)):
-                fib_list[i] = str(fib_list[i])
-            fib_str = str(" ").join(fib_list)
-        except TypeError, msg:
-            logging.error(msg)
-            fib_str = ""
-        xml_output = '<?xml version="1.0" encoding="UTF-8"?><fib>%s</fib>' % fib_str
-        return xml_output
+        return generate_fib_xml(fib_list)
     else:
         # return json format as default
         return json.dumps(fib_list)
     return
 
-def fibs(num):
+def fibs(num, base=None):
     """
     Return the fib list with specified number
+    The base parameter provides a known fib list, 
+    so the calculation could continue on that
     """
     
     if num not in VALID_FIB_RANGE:
@@ -122,77 +144,68 @@ def fibs(num):
     if num == 1:
         return [0]
     else:
-        result = [0, 1]
-        for i in range(num-2):
-            result.append(result[-2]+result[-1])
+        result = None
+        start, end = 0, 0
+        if base == None or type(base) != list or len(base) < 2:
+            # calculating from 0
+            result = [None] * num
+            result[0] = 0
+            result[1] = 1
+            start = 2
+            end = num
+        else:
+            # calculating from base
+            result = base 
+            start = len(base)
+            end = num
+            result.extend([None] * (end - start))
+
+        try:
+            for i in range(start, end):
+                result[i] = result[i-2] + result[i-1]
+        except (ValueError, IndexError, TypeError), msg:
+            logging.error("Error during generating the fib list: %s" % msg)
+            return []
         return result
 
-class httpServHandler(BaseHTTPRequestHandler):
+@app.route("/fib/<int:num>")
+def get_fib_nums(num):
     """
-    HTTP request handler
+    Handle Get Request to get fibonacci numbers
     """
-    def do_GET(self):
-        """
-        GET
-        """
+    # range check
+    if num not in VALID_FIB_RANGE:
+        abort(400)
 
-        fib_num, is_valid = self.validate_request()
- 
-        if is_valid:
-            configs = get_configuration()
-            self.send_response(200)
-            self.send_header('Content-type', 'text/%s' % configs['output_format'])
-            self.end_headers()
-            result = fibs(fib_num)
-            self.wfile.write(output_formatting(result, configs['output_format']))
-        else:
-            self.send_response(400)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write("The request url must be a postive integer number between 1 and %d" % FIB_MAX)
-        
+    fib_list = None
 
-    def log_message(self, format, *args):
-        """
-        log the message of the web service
-        """
-        logging.info(format % args)
+    # try to search existing result from cache
+    if app.config["local_cache"] != None:
+        fib_list = app.config["local_cache"].get("fibs")
+    if fib_list != None and len(fib_list) >= num:
+        logging.debug("Hit Cache!")
+        fib_list = fib_list[:num]
+        if len(fib_list) == 0:
+            abort(400)
+    else:
+        # calcualte the fibs based on the existing cache result
+        fib_list = fibs(num, fib_list)
+        if len(fib_list) == 0:
+            abort(400)
+        # update the cache to store the latest result
+        if app.config["local_cache"] != None:
+            app.config["local_cache"].set("fibs", fib_list)
+            logging.info("Updating cache with fib list of %d length" % num)
 
-    def validate_request(self):
-        """
-        Chech if the request is in a valid format
-        """
-        if self.path.find('?') != -1:
-            self.path, self.query_string = self.path.split('?', 1)
-        else:
-            self.query_string = ''
+    return output_formatting(fib_list, app.config['output_format'])
 
-        # get the fib number from the url
-        fib_num = 0
-        if self.path.find('/') != -1:
-            fib_num = self.path.split('/')[-1]
-
-        # bypass the favicon for browser
-        if fib_num == "favicon.ico":
-            return 0, False
-
-        # bad request for non-integer
-        try:
-            fib_num = long(fib_num)
-        except ValueError:
-            return 0, False
-
-        # bad request for negative value
-        if fib_num not in VALID_FIB_RANGE:
-            return 0, False
-
-        return fib_num, True
-           
-
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+@app.errorhandler(400)
+def bad_request(error):
     """
-    Handle requests in a separate  thread.
+    Handle bad request
     """
+    return "The fibonaaci numbers length is limited between 0 and %s" % FIB_MAX, 400
+
 def set_logging(log_file_path, env_loglevel = None):
     """
     Set the logging file and format of an application which uses python logging module.
@@ -247,20 +260,8 @@ def run():
     status, output = import_configuration(CONFIG_FILE)
     if status != SUCCESS:
         exit_with_msg(output)
-    configs = get_configuration()
 
-    try:
-        server_address = (configs['host'], configs['port'])
-        server = ThreadedHTTPServer(server_address, httpServHandler)
-        print "Starting server, useg <Ctrl-C> to stop"
-    except socket.error, msg:
-        exit_with_msg(msg)
-
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print "Shutting down the server..."
-        server.shutdown()
+    app.run(app.config['host'], app.config['port'], threaded = True)
 
 if __name__ == "__main__":
     try:

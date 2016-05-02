@@ -27,14 +27,14 @@ def httpPostRequest():
 
 try:
     httpClient = httplib.HTTPConnection('localhost', 8000, timeout=30)
-    httpGetRequest("/1")
-    httpGetRequest("/5")
-    httpGetRequest("/100")
+    httpGetRequest("/fib/1")
+    httpGetRequest("/fib/5")
+    httpGetRequest("/fib/100")
 
-    httpGetRequest("/1.1")
-    httpGetRequest("/-1")
-    httpGetRequest("/hello")
-    httpGetRequest("/10001")
+    httpGetRequest("/fib/1.1")
+    httpGetRequest("/fib/-1")
+    httpGetRequest("/fib/hello")
+    httpGetRequest("/fib/10001")
 
     httpPostRequest()
 
