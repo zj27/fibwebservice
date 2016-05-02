@@ -2,6 +2,7 @@
 Most of the test cases which has no dependecy on environment have been automated by python unittest module
 
 The [test_const.py](test_const.py) contains all the necessary constant required for the test verification.
+
 The [test_conf](test_conf)	folder contains configuration files for test.
 
 
@@ -9,7 +10,9 @@ The [test_conf](test_conf)	folder contains configuration files for test.
 The unit test focus on the major functions in the fibservice. The test scripts mainly verify the output of each functions.
 
 [test_u1_fibs.py](unit_test/test_u1_fibs.py): Fibonacci number list generation function test
+
 [test_u2_output.py](unit_test/test_u2_output.py): different output format test
+
 [test_u3_config.py](unit_test/test_u3_config.py): configuration related test
 
 Execute python pyunit.py to run the test cases automatically.
