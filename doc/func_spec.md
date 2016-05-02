@@ -60,6 +60,10 @@ format=json
 ## High Level Test Requirement
 [HLTR](HLTR.md)
 
-## Potential Improvement
+## Future Improvement
+Because of limited schedule and resource, some potential improvements not implemented yet are recorded as follow: 
 ### Deployment by Docker
 The current deployment procedure is still a little complex because it has dependency on python, flask and external http server. Container may be leveraged for a quick and simple deployment. All the dependencies could be installed in the container by being specified in the dockerfile. 
+### Better Caching
+* Add support for external cache server like memcached.
+* The normal "key-value" cache is not best for the fabonacci list. For example, if a list of 10 fibonacci numbers need to be updated as 20, it's actually not necessary to store the whole list of 20, but only need the last 10 numbers. One idea is to make the cache support "extend" the existing cache data. Another idea is the split the fibonacci number in different "key", for the same example, store the list of last 10 number into another key. But it will increase the complexity of the code to split and reconstruct the fibonacci list.  
