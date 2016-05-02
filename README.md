@@ -3,7 +3,7 @@ A simple web service which returns Fibonacci numbers with specified length betwe
 # Quick Start
 This quick start shows how to quickly deploy and run the fibwebservice.
 ## System Requirement
-* Linux platform is preferred
+* Linux OS
 * Python 2.x (2.6 or 2.7 is recommended)
 * [Flask](http://flask.pocoo.org) (the latest 0.10.1 is recommended)  
 
@@ -18,7 +18,7 @@ This quick start shows how to quickly deploy and run the fibwebservice.
 ## Running the web service
 Here is a simple guide on how to directly run this web service. For production, please integrate it with a http server. Next section shows an example of deployment in Apache. 
 
-1. Customize the configuration at **/etc/fibserver.cfg**
+1. Customize the configuration at **/etc/fibservice.cfg**
 
    ```
    [Server]
