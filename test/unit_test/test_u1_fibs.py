@@ -43,6 +43,7 @@ class FibTestCase(unittest.TestCase):
       
     def test_fib_with_base(self):
         """
+        U1-6 to U1-7
         """
         self.assertEqual(test_const.FIB_2, fibs(2, test_const.FIB_1[:]))
         self.assertEqual(test_const.FIB_3, fibs(3, test_const.FIB_1[:]))
