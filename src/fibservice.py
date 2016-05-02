@@ -40,6 +40,7 @@ def default_configuration():
     app.config["host"] = "localhost"
     app.config["port"] = 8000
     app.config["output_format"] = 'json'
+    app.config["local_cache"] = None
 
 def is_port_valid(port):
     """
@@ -175,12 +176,18 @@ def get_fib_nums(num):
     fib_list = None
     if app.config["local_cache"] != None:
         fib_list = app.config["local_cache"].get("fibs")
-    if fib_list != None and len(fib_list) <= num:
+    if fib_list != None and len(fib_list) >= num:
+        logging.debug("Hit Cache!")
         fib_list = fib_list[:num]
+        if len(fib_list) == 0:
+            abort(400)
     else:
         fib_list = fibs(num, fib_list)
-    if len(fib_list) == 0:
-         abort(400)
+        if len(fib_list) == 0:
+            abort(400)
+        if app.config["local_cache"] != None:
+            app.config["local_cache"].set("fibs", fib_list)
+            logging.info("Updating cache with fib list of %d length" % num)
     return output_formatting(fib_list, app.config['output_format'])
 
 @app.errorhandler(400)
