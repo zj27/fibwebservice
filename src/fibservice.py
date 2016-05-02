@@ -13,7 +13,9 @@ from xml.dom import minidom
 
 from flask import Flask
 from flask import abort
+from werkzeug.contrib.cache import SimpleCache 
 app = Flask(__name__)
+
 
 LOG_FILE = "/var/log/fibwebservice.log"
 CONFIG_FILE = "/etc/figservice.cfg"
@@ -71,6 +73,8 @@ def import_configuration_wsgi(config_file = CONFIG_FILE):
     if not is_output_format_valid(app.config["output_format"]):
         default_configuration()
 
+    # Do not use local cache when integrated with a wsgi server
+    app.config["local_cache"] = None
 
 def import_configuration(config_file):
     """
@@ -91,6 +95,8 @@ def import_configuration(config_file):
         return FAILURE, "Invalid port %d" % app.config["port"]
     if not is_output_format_valid(app.config["output_format"]):
         return FAILURE, "Invalid output format %s" % app.config["output_format"]
+
+    app.config["local_cache"] = SimpleCache()
 
     return SUCCESS, None
 
@@ -124,9 +130,11 @@ def output_formatting(fib_list, output_format):
         return json.dumps(fib_list)
     return
 
-def fibs(num):
+def fibs(num, base=None):
     """
     Return the fib list with specified number
+    The base parameter provides a known fib list, 
+    so the calculation could continue on that
     """
     
     if num not in VALID_FIB_RANGE:
@@ -135,16 +143,42 @@ def fibs(num):
     if num == 1:
         return [0]
     else:
-        result = [0] * num
-        result[0] = 0
-        result[1] = 1
-        for i in range(2, num):
-            result[i] = result[i-2]+result[i-1]
+        result = None
+        start, end = 0, 0
+        if base == None or type(base) != list or len(base) < 2:
+            result = [None] * num
+            result[0] = 0
+            result[1] = 1
+            start = 2
+            end = num
+        else:
+            # a full copy to avoid changing base
+            try:
+                result = base[:] 
+            except TypeError, msg:
+                logging.error("Incorrect base list: %s" % msg)
+                return []
+            start = len(base)
+            end = num
+            result.extend([None] * (end - start))
+
+        try:
+            for i in range(start, end):
+                result[i] = result[i-2] + result[i-1]
+        except (ValueError, IndexError, TypeError), msg:
+            logging.error("Error during generating the fib list: %s" % msg)
+            return []
         return result
 
 @app.route("/fib/<int:num>")
 def get_fib_nums(num):
-    fib_list = fibs(num)
+    fib_list = None
+    if app.config["local_cache"] != None:
+        fib_list = app.config["local_cache"].get("fibs")
+    if fib_list != None and len(fib_list) <= num:
+        fib_list = fib_list[:num]
+    else:
+        fib_list = fibs(num, fib_list)
     if len(fib_list) == 0:
          abort(400)
     return output_formatting(fib_list, app.config['output_format'])

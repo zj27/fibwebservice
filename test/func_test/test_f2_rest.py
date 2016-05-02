@@ -25,7 +25,7 @@ class FibServiceTestCase(unittest.TestCase):
         """
         Functional test for rest request
         """ 
-        fibservice.default_configuration()
+        fibservice.import_configuration("test_conf/fibservice.cfg")
 
         rv = self.app.get("/")
         self.assertEqual(404, rv.status_code)
