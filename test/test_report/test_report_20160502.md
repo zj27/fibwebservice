@@ -1,4 +1,4 @@
-Unit Test
+# Unit Test
 
 ```
 test_fib_with_base (test_u1_fibs.FibTestCase) ... ok
@@ -16,7 +16,7 @@ OK
 
 ```
 
-Functional Test
+# Functional Test
 
 ```
 test_rest_request (test_f2_rest.FibServiceTestCase) ... ok
