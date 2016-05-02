@@ -71,3 +71,6 @@ Because of limited schedule and resource, some potential improvements not implem
 
 ### Compression on Response Data
 * The returned fabonaaci numbers data may be big in size, so the network transmission will become the bottleneck. So the response could be compressed by encoding. And the client will decode it to get the right data.
+
+### Continuous Integration
+* Leverage CI tools for automation build and deployment/load testing.
