@@ -147,18 +147,15 @@ def fibs(num, base=None):
         result = None
         start, end = 0, 0
         if base == None or type(base) != list or len(base) < 2:
+            # calculating from 0
             result = [None] * num
             result[0] = 0
             result[1] = 1
             start = 2
             end = num
         else:
-            # a full copy to avoid changing base
-            try:
-                result = base[:] 
-            except TypeError, msg:
-                logging.error("Incorrect base list: %s" % msg)
-                return []
+            # calculating from base
+            result = base 
             start = len(base)
             end = num
             result.extend([None] * (end - start))
@@ -173,7 +170,16 @@ def fibs(num, base=None):
 
 @app.route("/fib/<int:num>")
 def get_fib_nums(num):
+    """
+    Handle Get Request to get fibonacci numbers
+    """
+    # range check
+    if num not in VALID_FIB_RANGE:
+        abort(400)
+
     fib_list = None
+
+    # try to search existing result from cache
     if app.config["local_cache"] != None:
         fib_list = app.config["local_cache"].get("fibs")
     if fib_list != None and len(fib_list) >= num:
@@ -182,16 +188,22 @@ def get_fib_nums(num):
         if len(fib_list) == 0:
             abort(400)
     else:
+        # calcualte the fibs based on the existing cache result
         fib_list = fibs(num, fib_list)
         if len(fib_list) == 0:
             abort(400)
+        # update the cache to store the latest result
         if app.config["local_cache"] != None:
             app.config["local_cache"].set("fibs", fib_list)
             logging.info("Updating cache with fib list of %d length" % num)
+
     return output_formatting(fib_list, app.config['output_format'])
 
 @app.errorhandler(400)
 def bad_request(error):
+    """
+    Handle bad request
+    """
     return "The fibonaaci numbers length is limited between 0 and %s" % FIB_MAX, 400
 
 def set_logging(log_file_path, env_loglevel = None):

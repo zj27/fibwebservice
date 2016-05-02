@@ -44,11 +44,11 @@ class FibTestCase(unittest.TestCase):
     def test_fib_with_base(self):
         """
         """
-        self.assertEqual(test_const.FIB_2, fibs(2, test_const.FIB_1))
-        self.assertEqual(test_const.FIB_3, fibs(3, test_const.FIB_1))
-        self.assertEqual(test_const.FIB_3, fibs(3, test_const.FIB_2))
-        self.assertEqual(test_const.FIB_5, fibs(5, test_const.FIB_2))
-        self.assertEqual(test_const.FIB_100, fibs(100, test_const.FIB_5))
+        self.assertEqual(test_const.FIB_2, fibs(2, test_const.FIB_1[:]))
+        self.assertEqual(test_const.FIB_3, fibs(3, test_const.FIB_1[:]))
+        self.assertEqual(test_const.FIB_3, fibs(3, test_const.FIB_2[:]))
+        self.assertEqual(test_const.FIB_5, fibs(5, test_const.FIB_2[:]))
+        self.assertEqual(test_const.FIB_100, fibs(100, test_const.FIB_5[:]))
         # negative input
         self.assertEqual(test_const.FIB_5, fibs(5, 5))
         self.assertEqual(test_const.FIB_5, fibs(5, "hello"))
