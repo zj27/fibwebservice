@@ -8,6 +8,8 @@ Some of the cases have been implemented with automation scripts included in the 
 + U1-3 call the function with floating number.
 + U1-4 call the function with string
 + U1-5 call the function with very big number out of boundary.
++ U1-6 call the function with existing list
++ U1-7 call the function but provides a non-list as negative input
 
 ## U2 Output Formatting
 + U2-1 call the function with json output
